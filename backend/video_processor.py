@@ -8,6 +8,7 @@ import logging
 from datetime import datetime
 import yaml
 import base64
+import os
 from person_tracker import PersonTracker, Person
 import asyncio
 import websockets
