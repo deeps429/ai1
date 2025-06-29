@@ -47,19 +47,39 @@ class VideoProcessor:
     def _load_config(self, config_path: str) -> Dict[str, Any]:
         """Load configuration from YAML file"""
         try:
-            with open(config_path, 'r') as file:
-                return yaml.safe_load(file)
+            # Try different possible paths
+            possible_paths = [
+                config_path,
+                os.path.join(os.path.dirname(__file__), config_path),
+                os.path.join('/app/backend', config_path)
+            ]
+            
+            config_file = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    config_file = path
+                    break
+            
+            if config_file:
+                with open(config_file, 'r') as file:
+                    logger.info(f"Loading config from: {config_file}")
+                    return yaml.safe_load(file)
+            else:
+                logger.warning(f"Config file not found in any of these paths: {possible_paths}")
+                
         except Exception as e:
             logger.error(f"Failed to load config: {e}")
-            # Return default config
-            return {
-                'detection': {'model_path': 'yolov8n.pt', 'confidence_threshold': 0.5, 'person_class_id': 0},
-                'tracking': {'max_disappeared_frames': 30, 'max_distance_threshold': 100},
-                'idle_detection': {'movement_threshold': 20, 'idle_alert_threshold': 30},
-                'video': {'frame_resize_width': 640, 'frame_resize_height': 480, 'fps_limit': 15},
-                'roi': {'enabled': True, 'coordinates': []},
-                'websocket': {'port': 8002, 'max_connections': 10}
-            }
+            
+        # Return default config
+        logger.info("Using default configuration")
+        return {
+            'detection': {'model_path': 'yolov8n.pt', 'confidence_threshold': 0.5, 'person_class_id': 0},
+            'tracking': {'max_disappeared_frames': 30, 'max_distance_threshold': 100},
+            'idle_detection': {'movement_threshold': 20, 'idle_alert_threshold': 30},
+            'video': {'frame_resize_width': 640, 'frame_resize_height': 480, 'fps_limit': 15},
+            'roi': {'enabled': True, 'coordinates': []},
+            'websocket': {'port': 8002, 'max_connections': 10}
+        }
 
     def set_roi(self, coordinates: List[Tuple[int, int]]):
         """Set Region of Interest polygon"""
