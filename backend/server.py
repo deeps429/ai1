@@ -193,7 +193,8 @@ async def update_detection_config(config: DetectionConfig):
             "idle_alert_threshold": config.idle_alert_threshold,
             "updated_at": datetime.utcnow()
         }
-        await db.detection_configs.insert_one(config_data)
+        result = await db.detection_configs.insert_one(config_data)
+        config_data["_id"] = str(result.inserted_id)
         
         return {"message": "Detection configuration updated", "config": config_data}
     except Exception as e:
