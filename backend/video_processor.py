@@ -327,19 +327,28 @@ class VideoProcessor:
         frame_time = 1.0 / fps_limit if fps_limit > 0 else 0
         last_frame_time = time.time()
         
-        while self.is_processing and self.video_capture is not None:
+        while self.is_processing:
             try:
-                # Read frame
-                ret, frame = self.video_capture.read()
-                if not ret:
-                    logger.warning("Failed to read frame, attempting to reconnect...")
-                    time.sleep(1)
-                    continue
-                
                 start_time = time.time()
                 
-                # Detect persons
-                detections = self._detect_persons(frame)
+                # Get frame based on mode
+                if self.dummy_mode or self.video_capture is None:
+                    frame = self._generate_dummy_frame()
+                    detections = self._get_dummy_detections()
+                    ret = True
+                else:
+                    # Read frame from video capture
+                    ret, frame = self.video_capture.read()
+                    if not ret:
+                        logger.warning("Failed to read frame, switching to dummy mode...")
+                        self.dummy_mode = True
+                        continue
+                    
+                    # Detect persons using YOLO
+                    detections = self._detect_persons(frame)
+                
+                if not ret:
+                    continue
                 
                 # Update tracker
                 persons = self.tracker.update(
@@ -362,7 +371,7 @@ class VideoProcessor:
                 if self.connected_clients:
                     frame_data = self._encode_frame_for_websocket(output_frame)
                     detection_data = {
-                        'type': 'detection_update',
+                        'type': 'realtime_update',
                         'persons': [person.to_dict() for person in persons],
                         'stats': {
                             'active_count': len([p for p in persons if not p.disappeared_frames]),
@@ -374,10 +383,12 @@ class VideoProcessor:
                     }
                     
                     # Broadcast asynchronously
-                    asyncio.run_coroutine_threadsafe(
-                        self._broadcast_to_clients(json.dumps(detection_data)),
-                        asyncio.get_event_loop()
-                    )
+                    try:
+                        loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(loop)
+                        loop.run_until_complete(self._broadcast_to_clients(json.dumps(detection_data)))
+                    except Exception as e:
+                        logger.error(f"Error broadcasting WebSocket data: {e}")
                 
                 # FPS limiting
                 if frame_time > 0:
