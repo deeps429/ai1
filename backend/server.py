@@ -18,6 +18,10 @@ import base64
 import tempfile
 import yaml
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from video_processor import VideoProcessor
 from person_tracker import Person
 
