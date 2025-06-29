@@ -32,6 +32,8 @@ class VideoProcessor:
         self.processing_thread = None
         self.websocket_server = None
         self.connected_clients = set()
+        self.dummy_mode = False
+        self.dummy_frame_count = 0
         
         # Statistics
         self.stats = {
