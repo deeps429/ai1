@@ -229,8 +229,8 @@ class VideoProcessor:
     def start_processing(self, source: str):
         """Start video processing from source"""
         if self.is_processing:
-            logger.warning("Processing already running")
-            return False
+            logger.info("Processing already running")
+            return True  # Return True instead of False if already running
         
         try:
             # Initialize video capture
@@ -243,7 +243,7 @@ class VideoProcessor:
                 self.video_capture = cv2.VideoCapture(source)
             
             if not self.video_capture.isOpened():
-                logger.warning(f"Failed to open video source: {source}")
+                logger.warning(f"Failed to open video source: {source}, switching to demo mode")
                 # For testing purposes, create a dummy video source
                 self.video_capture = None
                 self._create_dummy_video_source()
@@ -258,7 +258,7 @@ class VideoProcessor:
             self.processing_thread = threading.Thread(target=self._process_video, daemon=True)
             self.processing_thread.start()
             
-            logger.info(f"Started processing video source: {source}")
+            logger.info(f"Started processing video source: {source} (demo mode: {self.dummy_mode})")
             return True
             
         except Exception as e:
