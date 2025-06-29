@@ -116,7 +116,8 @@ async def start_video_processing(config: VideoSourceConfig):
                 "started_at": datetime.utcnow(),
                 "status": "active"
             }
-            await db.video_sources.insert_one(video_config)
+            result = await db.video_sources.insert_one(video_config)
+            video_config["_id"] = str(result.inserted_id)
             
             return {"message": "Video processing started successfully", "config": video_config}
         else:
