@@ -237,10 +237,10 @@ class VideoProcessor:
         async def server():
             self.websocket_server = await websockets.serve(
                 self._handle_websocket_client,
-                "localhost",
+                "0.0.0.0",  # Bind to all interfaces instead of localhost
                 self.config['websocket']['port']
             )
-            logger.info(f"WebSocket server started on port {self.config['websocket']['port']}")
+            logger.info(f"WebSocket server started on 0.0.0.0:{self.config['websocket']['port']}")
             await self.websocket_server.wait_closed()
         
         loop = asyncio.new_event_loop()
