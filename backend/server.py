@@ -157,7 +157,8 @@ async def set_roi(roi_config: ROIConfig):
             "enabled": roi_config.enabled,
             "created_at": datetime.utcnow()
         }
-        await db.roi_configs.insert_one(roi_data)
+        result = await db.roi_configs.insert_one(roi_data)
+        roi_data["_id"] = str(result.inserted_id)
         
         return {"message": "ROI updated successfully", "config": roi_data}
     except Exception as e:
