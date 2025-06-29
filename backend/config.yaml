@@ -1,0 +1,50 @@
+# Idle Person Detection Configuration
+
+# Detection Parameters
+detection:
+  model_path: "yolov8n.pt"  # YOLO model path
+  confidence_threshold: 0.5
+  person_class_id: 0  # COCO class ID for person
+  
+# Tracking Parameters
+tracking:
+  max_disappeared_frames: 30
+  max_distance_threshold: 100
+  
+# Idle Detection Parameters
+idle_detection:
+  movement_threshold: 20  # pixels
+  idle_alert_threshold: 30  # seconds
+  
+# Video Processing
+video:
+  frame_resize_width: 640
+  frame_resize_height: 480
+  fps_limit: 15
+  
+# ROI (Region of Interest)
+roi:
+  enabled: true
+  coordinates: []  # Will be set via web interface
+  
+# Logging
+logging:
+  level: "INFO"
+  log_file: "detection.log"
+  max_file_size: "10MB"
+  backup_count: 5
+  
+# WebSocket
+websocket:
+  port: 8002
+  max_connections: 10
+  
+# Video Sources
+video_sources:
+  rtsp:
+    timeout: 30
+    reconnect_delay: 5
+    buffer_size: 1
+  file:
+    loop: false
+    auto_next: true
